@@ -9,8 +9,8 @@
 
 
 //  section 3.2 for definitions
-uint32_t rotr(uint32_t x, uint32_t n);
-uint32_t shr(uint32_t x, uint32_t n);
+uint32_t rotr(uint32_t n, uint32_t x);
+uint32_t shr(uint32_t n, uint32_t x);
 
 //  section 4.1.2 for definitions
 uint32_t SIG0(uint32_t x);
@@ -28,12 +28,14 @@ uint32_t sig1(uint32_t x);
 
 int main(int argc, char *argv[]){
 
+	//call the hash algorithim  
 	sha256();
 
 } // end main
 
 void sha256(){
 	//the  message schedule (section 6.2)
+	// 
 	uint32_t W[64];
 
 	// the working variables (section 6.2)
@@ -44,6 +46,8 @@ void sha256(){
 
 	// the hash values (section 6.2)
 	// the values come from (section 5.3.3)
+	// unit guarantees 32 bits 
+	// 0X for hex literals
 	uint32_t H[8] = {
 		0x6a09e667,
 		0xbb67ae85,
@@ -113,11 +117,12 @@ void sha256(){
 }// end void sha265()
 
 // see sections 3.2 for definitions
-uint32_t rotr(uint32_t x, uint32_t n){
+uint32_t rotr(uint32_t n, uint32_t x){
 	return (x >> n) | (x << (32-n));
 }
 
-uint32_t shr(uint32_t x, uint32_t n){
+// shift right n positions 
+uint32_t shr(uint32_t n, uint32_t x){
 	return (x >> n);
 }
 
