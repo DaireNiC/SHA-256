@@ -40,7 +40,7 @@ int main(int argc, char *argv[]){
     }
   }
   fclose(f);
-
+// print to check output
   for (int i = 0; i < 64; i++) {
     printf("%x ", M.e[i]);
     printf("\n");
