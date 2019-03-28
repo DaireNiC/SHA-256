@@ -3,9 +3,9 @@
 // https://csrc.nist.ggov/csrc/media/publications/fips/180/4/final/documents/fips180-4-draft-aug2014.pdf
 
 // input/output header file
-#include < stdio.h >
+#include<stdio.h>
   // For using fixed bit length integers
-#include < stdint.h >
+#include <stdint.h>
 
   // using a union to store var associated in same chunk of memory
   // every member var stored in same memory location
@@ -113,21 +113,24 @@ uint32_t K[] = {
 };
 
 // Retrieves the next message msgblock
-int nextmsgblock(FILE * f, union msgblock * M, enum status * S, int * nobits);
+int nextmsgblock(FILE * msgf, union msgblock * M, enum status * S, uint64_t * nobits);
 
 // Start of app
 int main(int argc, char * argv[]) {
 
   // pointer for file
-  FILE * f;
+  FILE * msgf;
+
   // open file in read mod// ADD ERROR CHECK
-  f = fopen(argv[1], "r");
+  msgf = fopen(argv[1], "r");
   //call the hash algorithim
-  sha256(f);
+  sha256(msgf);
+  // completed all reading
+  fclose(msgf);
 
 } // end main
 
-void sha256(FILE * f) {
+void sha256(FILE * msgf) {
 
   // the current msg blcok
   union msgblock M;
@@ -148,6 +151,7 @@ void sha256(FILE * f) {
   // the values come from (section 5.3.3)
   // unit guarantees 32 bits
   // 0X for hex literals
+  //malloc in future
   uint32_t H[8] = {
     0x6a09e667,
     0xbb67ae85,
@@ -163,10 +167,10 @@ void sha256(FILE * f) {
   int i, t;
 
   // loop through message block page 22
-  while (nextmsgblock(f, M, S, nobits)) {
+  while (nextmsgblock(msgf, M, S, nobits)) {
     // from page 22, W[t] = M[t] for 0 <= t <=15
     for (t = 0; t < 16; t++) {
-      W[t] = M.t[t];
+      W[t] = M->t[t];
     }
 
     // from page 22, W[t] = ...
@@ -258,80 +262,84 @@ uint32_t Maj(uint32_t x, uint32_t y, uint32_t z) {
   return ((x & y) ^ (x & z) ^ (y & z));
 }
 
-int nextmsgblock(FILE * f, union msgblock * M, enum status * S, int * nobits) {
+int nextmsgblock(FILE * f, union msgblock * M, enum status * S, uint64_t * nobits) {
 
   uint64_t nobytes;
+
+  // completed message blocks
+  if ( * S == FINISH) {
+
+    return 0
+  }
+
+  // otherwise check if need another block of padding
+  if (S == PAD0 || S == PAD1) {
+    // set first 56 bytes to all 0 bits
+    for (int i = 0; i < 56; i++)
+      M->e[i] = 0x00;
+    //set last 64 bits to int (num of bits in file)--> should be bigEndian
+    M->s[7] = nobits;
+    // finished reading
+    * S = FINISH;
+  }
+  // wSET FIRST BIT TO 1
+  if (S == PAD1) {
+    M->e[0] = 0x80;
+    //  keep the loop for another iteration
+    return 1;
+  }
 
   //deals in bytes -->  1 = 1 byte
   // one byte at a time
   // loop until end of file
-  while (S == READ) {
 
-    // Read in file 64 bytes at a time
-    nobytes = fread(M.e, 1, 64, f);
-    printf("Read %2llu bytes\n", nobytes);
-    nobits = nobits + (nobytes * 8);
+  //at this point we havent finished reading file (S==READ)
 
-    // if msg block has < 56 byte ---> pad it out with 0s
-    if (nobytes < 56) {
+  // Read in file 64 bytes at a time
+  nobytes = fread(M->e, 1, 64, msgf);
 
-      printf("I've found a block with less than 55 bytes!\n");
+  // keep track num bytes read
+  * nobits = * nobits + (nobytes * 8);
 
-      //1 in hex (as per spec)
-      M.e[nobytes] = 0x80;
+  // if msg block has < 56 byte ---> pad it out with 0s
+  if (nobytes < 56) {
+    //1 in hex (as per spec)
+    M->e[nobytes] = 0x80;
 
-      // write 0's for padding
-      while (nobytes < 56) {
-        nobytes = nobytes + 1;
-        // 0 in hex for padding
-        M.e[nobytes] = 0x00;
-      } // end while
+    // write 0's for padding until final 64 bits
+    while (nobytes < 56) {
+      nobytes = nobytes + 1;
+      // 0 in hex for padding
+      M->e[nobytes] = 0x00;
+    } // end while
 
-      // write in the number of bits of the original message
-      M.s[7] = nobits;
-      // completed reading the file
-      S = FINISH;
-    }
-    // message must be spread into another block
-    // if read > 55 but <64 bits
-    else if (nobytes < 64) {
+    // write in the number of bits of the original message as
+    M->s[7] = nobits;
+    // completed reading the file
+    * S = FINISH;
+    // otherwise check if can put some padding in block
+  } else if (nobytes < 64) {
+    // need another msg blcok with only padding, no 1 bit
+    S = PAD0;
+    // append 1
+    M->e[nobytes] = 0x80;
 
-      S = PAD0;
-      // append 1
-      M.e[nobytes] = 0x80;
+    // pad with 0's if file is multiple of 64
+    while (nobytes < 64) {:
+      nobytes = nobytes + 1;
+      M->e[nobytes] = 0x00;
+    } // end while
 
-      // pad with 0's if file is multiple of 64
-      while (nobytes < 64) {
-        nobytes = nobytes + 1;
-        M.e[nobytes] = 0x00;
-      } // end while
-    }
-
-    //  if finished reading file, no bits left over
-    else if (feof(f)) {
-      // still need to create msg block with padding
-      S = PAD1;
-    }
-  } // end while
-
-  if (S == PAD0 || S == PAD1) {
-    for (int i = 0; i < 56; i++)
-      M.e[i] = 0x00;
-    M.s[7] = nobits;
   }
-  // write 1 to padding
-  if (S == PAD1) {
-    M.e[0] = 0x80;
+  //  if finished reading file, no bits left over
+  else if (feof(msgf)) {
+    // still need to create msg block with padding
+    S = PAD1;
   }
 
   // completed all reading
-  fclose(f);
-
-  // test with output
-  for (int i = 0; i < 64; i++)
-    printf("%x ", M.e[i]);
-
-  printf("\n");
-
-  return 0;
+  fclose(msgf);
+  // return to call function again
+  return 1;
 } // end main
+
