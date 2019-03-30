@@ -6,7 +6,7 @@
 #include <stdio.h>
   // For using fixed bit length integers
 #include <stdint.h>
-
+#include <string.h>
   // using a union to store var associated in same chunk of memory
   // every member var stored in same memory location
   // useful for accessing same var in different ways
@@ -41,11 +41,11 @@ void sha256(FILE *f);
 
 // see sections 4.1.2 for definitions
 static uint32_t sig0(uint32_t x);
-static uint32_t sig1(uint32_t x);
+static uint32_t sig1( uint32_t x);
 
 // K constants --> cubed roots
 // defined in section 4.2.2
-uint32_t K[] = {
+const uint32_t K[] = {
   0x428a2f98,
   0x71374491,
   0xb5c0fbcf,
@@ -112,6 +112,10 @@ uint32_t K[] = {
   0xc67178f2
 };
 
+// test output for string "abc"
+// source: https://www.di-mgt.com.au/sha_testvectors.html
+const char *TEST = "ddaf35a193617aba cc417349ae204131 12e6fa4e89a97ea2 0a9eeee64b55d39a 2192992a274fc1a8 36ba3c23a3feebbd 454d4423643ce80e 2a9ac94fa54ca49f";
+
 // Retrieves the next message msgblock
 int nextmsgblock(FILE *msgf, union msgblock *M, enum status *S, uint64_t *nobits);
 
@@ -120,6 +124,11 @@ int main(int argc, char *argv[]) {
 
   // pointer for file
   FILE *msgf;
+
+  //check if it's the test file
+  if(strcmp(argv[1],"test.txt") ==0){
+      printf("==== Executing SHA256 with test file ===== \n Expected output: %s\n\n",  TEST);
+  }
 
   // open file in read mod// ADD ERROR CHECK
   msgf = fopen(argv[1], "r");
@@ -222,7 +231,7 @@ void sha256(FILE *msgf) {
 
   } // end for
 
-  printf("%08x %x %x %x %x %x  %x %x \n ", H[0], H[1], H[2], H[3], H[4], H[5], H[6], H[7]);
+  printf("SHA256 Output: %08x %x %x %x %x %x  %x %x \n ", H[0], H[1], H[2], H[3], H[4], H[5], H[6], H[7]);
 } // end void sha265()
 
 // see sections 3.2 for definitions
@@ -281,7 +290,7 @@ int nextmsgblock(FILE *msgf, union msgblock *M, enum status *S, uint64_t *nobits
     M->s[7] = *nobits;
     // finished reading
     *S = FINISH;
-  
+
   // wSET FIRST BIT TO 1
     if (*S == PAD1) {
       M->e[0] = 0x80;
@@ -341,5 +350,4 @@ int nextmsgblock(FILE *msgf, union msgblock *M, enum status *S, uint64_t *nobits
   // completed all reading
   return 1;
 } // end main
-
 
