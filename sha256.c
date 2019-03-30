@@ -3,18 +3,18 @@
 // https://csrc.nist.ggov/csrc/media/publications/fips/180/4/final/documents/fips180-4-draft-aug2014.pdf
 
 // input/output header file
-#include<stdio.h>
+#include <stdio.h>
   // For using fixed bit length integers
 #include <stdint.h>
 
   // using a union to store var associated in same chunk of memory
   // every member var stored in same memory location
   // useful for accessing same var in different ways
-  union msgblock {
+union msgblock {
     uint8_t e[64];
     uint32_t t[16];
     uint64_t s[8];
-  };
+};
 
 // flags for keeping track of status when reading file
 enum status {
@@ -25,23 +25,23 @@ enum status {
 };
 
 //  section 3.2 for definitions
-uint32_t rotr(uint32_t n, uint32_t x);
-uint32_t shr(uint32_t n, uint32_t x);
+static inline uint32_t rotr(uint32_t n, uint32_t x);
+static uint32_t  shr(uint32_t n, uint32_t x);
 
 //  section 4.1.2 for definitions
-uint32_t SIG0(uint32_t x);
-uint32_t SIG1(uint32_t x);
+static uint32_t SIG0(uint32_t x);
+static uint32_t SIG1(uint32_t x);
 
 //  section 4.1.2 for definitions
-uint32_t Ch(uint32_t x, uint32_t y, uint32_t z);
-uint32_t Maj(uint32_t x, uint32_t y, uint32_t z);
+static uint32_t Ch(uint32_t x, uint32_t y, uint32_t z);
+static uint32_t Maj(uint32_t x, uint32_t y, uint32_t z);
 
 //calculates hash of a file
-void sha256(FILE * f);
+void sha256(FILE *f);
 
 // see sections 4.1.2 for definitions
-uint32_t sig0(uint32_t x);
-uint32_t sig1(uint32_t x);
+static uint32_t sig0(uint32_t x);
+static uint32_t sig1(uint32_t x);
 
 // K constants --> cubed roots
 // defined in section 4.2.2
@@ -113,13 +113,13 @@ uint32_t K[] = {
 };
 
 // Retrieves the next message msgblock
-int nextmsgblock(FILE * msgf, union msgblock * M, enum status * S, uint64_t * nobits);
+int nextmsgblock(FILE *msgf, union msgblock *M, enum status *S, uint64_t *nobits);
 
 // Start of app
-int main(int argc, char * argv[]) {
+int main(int argc, char *argv[]) {
 
   // pointer for file
-  FILE * msgf;
+  FILE *msgf;
 
   // open file in read mod// ADD ERROR CHECK
   msgf = fopen(argv[1], "r");
@@ -130,7 +130,7 @@ int main(int argc, char * argv[]) {
 
 } // end main
 
-void sha256(FILE * msgf) {
+void sha256(FILE *msgf) {
 
   // the current msg blcok
   union msgblock M;
@@ -167,10 +167,10 @@ void sha256(FILE * msgf) {
   int i, t;
 
   // loop through message block page 22
-  while (nextmsgblock(msgf, M, S, nobits)) {
+  while (nextmsgblock(msgf, &M, &S, &nobits)) {
     // from page 22, W[t] = M[t] for 0 <= t <=15
     for (t = 0; t < 16; t++) {
-      W[t] = M->t[t];
+      W[t] = M.t[t];
     }
 
     // from page 22, W[t] = ...
@@ -222,69 +222,70 @@ void sha256(FILE * msgf) {
 
   } // end for
 
-  printf("%x %x %x %x %x %x  %x %x \n ", H[0], H[1], H[2], H[3], H[4], H[5], H[6], H[7]);
+  printf("%08x %x %x %x %x %x  %x %x \n ", H[0], H[1], H[2], H[3], H[4], H[5], H[6], H[7]);
 } // end void sha265()
 
 // see sections 3.2 for definitions
 // rotate n bits to the right
-uint32_t rotr(uint32_t n, uint32_t x) {
+static inline uint32_t rotr(uint32_t n, uint32_t x) {
   return (x >> n) | (x << (32 - n));
 }
 
 // shift right n positions
-uint32_t shr(uint32_t n, uint32_t x) {
+static uint32_t shr(uint32_t n, uint32_t x) {
   return (x >> n);
 }
 
 // see sections 3.2 & 4.1.2 for definitions
-uint32_t sig0(uint32_t x) {
+static uint32_t sig0(uint32_t x) {
   return (rotr(7, x) ^ rotr(18, x) ^ shr(3, x));
 }
 
-uint32_t sig1(uint32_t x) {
+static uint32_t sig1(uint32_t x) {
   return (rotr(17, x) ^ rotr(19, x) ^ shr(10, x));
 }
 
-uint32_t SIG0(uint32_t x) {
+static uint32_t SIG0(uint32_t x) {
   return (rotr(2, x) ^ rotr(13, x) ^ rotr(22, x));
 }
 
-uint32_t SIG1(uint32_t x) {
+static uint32_t SIG1(uint32_t x) {
   return (rotr(6, x) ^ rotr(11, x) ^ rotr(25, x));
 }
 
-uint32_t Ch(uint32_t x, uint32_t y, uint32_t z) {
+static uint32_t Ch(uint32_t x, uint32_t y, uint32_t z) {
   return ((x & y) ^ ((!x) & z));
 }
 
 //majority vote
-uint32_t Maj(uint32_t x, uint32_t y, uint32_t z) {
+static uint32_t Maj(uint32_t x, uint32_t y, uint32_t z) {
   return ((x & y) ^ (x & z) ^ (y & z));
 }
 
-int nextmsgblock(FILE * f, union msgblock * M, enum status * S, uint64_t * nobits) {
+int nextmsgblock(FILE *msgf, union msgblock *M, enum status *S, uint64_t *nobits) {
 
   uint64_t nobytes;
 
   // completed message blocks
-  if ( * S == FINISH) {
-
-    return 0
+  if ( *S == FINISH) {
+      return 0;
   }
 
   // otherwise check if need another block of padding
-  if (S == PAD0 || S == PAD1) {
+  if (*S == PAD0 || *S == PAD1) {
     // set first 56 bytes to all 0 bits
-    for (int i = 0; i < 56; i++)
+    for (int i = 0; i < 56; i++){
       M->e[i] = 0x00;
+    }
     //set last 64 bits to int (num of bits in file)--> should be bigEndian
-    M->s[7] = nobits;
+    M->s[7] = *nobits;
     // finished reading
-    * S = FINISH;
-  }
+    *S = FINISH;
+  
   // wSET FIRST BIT TO 1
-  if (S == PAD1) {
-    M->e[0] = 0x80;
+    if (*S == PAD1) {
+      M->e[0] = 0x80;
+    }
     //  keep the loop for another iteration
     return 1;
   }
@@ -299,7 +300,7 @@ int nextmsgblock(FILE * f, union msgblock * M, enum status * S, uint64_t * nobit
   nobytes = fread(M->e, 1, 64, msgf);
 
   // keep track num bytes read
-  * nobits = * nobits + (nobytes * 8);
+  *nobits = *nobits + (nobytes * 8);
 
   // if msg block has < 56 byte ---> pad it out with 0s
   if (nobytes < 56) {
@@ -314,18 +315,18 @@ int nextmsgblock(FILE * f, union msgblock * M, enum status * S, uint64_t * nobit
     } // end while
 
     // write in the number of bits of the original message as
-    M->s[7] = nobits;
+    M->s[7] = *nobits;
     // completed reading the file
-    * S = FINISH;
+    *S = FINISH;
     // otherwise check if can put some padding in block
   } else if (nobytes < 64) {
     // need another msg blcok with only padding, no 1 bit
-    S = PAD0;
+    *S = PAD0;
     // append 1
     M->e[nobytes] = 0x80;
 
     // pad with 0's if file is multiple of 64
-    while (nobytes < 64) {:
+    while (nobytes < 64) {
       nobytes = nobytes + 1;
       M->e[nobytes] = 0x00;
     } // end while
@@ -334,12 +335,11 @@ int nextmsgblock(FILE * f, union msgblock * M, enum status * S, uint64_t * nobit
   //  if finished reading file, no bits left over
   else if (feof(msgf)) {
     // still need to create msg block with padding
-    S = PAD1;
+    *S = PAD1;
   }
 
   // completed all reading
-  fclose(msgf);
-  // return to call function again
   return 1;
 } // end main
+
 
