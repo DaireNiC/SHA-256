@@ -1,6 +1,6 @@
-# Secure Hash Algorithim 
+# Secure Hash Algorithm 
 
-This repo contains an implementation of the SHA 256 algorithim written in the C programming language. 
+This repo contains an implementation of the SHA 256 algorithm written in the C programming language. 
 
 
 ![source: keyword-hero.com](https://keyword-hero.com/wp-content/uploads/2017/05/sha256-1.png)
@@ -39,7 +39,7 @@ The code was written in accordance to the the Secure Hash Algorthim as specified
 	![sha](https://github.com/DaireNiC/SHA-256/blob/master/media/media.JPG)
 
 # SHA 256
-SHA 256 is an iterative algorithim. The input is alterted in such a way that the output from the last iteration is the input to the next iteration. Therefore, any slight change to the input results in a drastically different output, thus increasing the security of the algorithim.
+SHA 256 is an iterative algorithm. The input is alterted in such a way that the output from the last iteration is the input to the next iteration. Therefore, any slight change to the input results in a drastically different output, thus increasing the security of the algorithm.
 
 ![sha](https://github.com/DaireNiC/SHA-256/blob/master/media/media2.JPG)
 
@@ -53,7 +53,7 @@ Message Digest|`Series of fixed length hex characters`
 
 
 
- The secure hashing algorithim can be described in two stages:
+ The secure hashing algorithm can be described in two stages:
 
  1. Preprocessing the message
  2. Hash Computation 
@@ -114,7 +114,7 @@ void sha256(FILE *msgf) {
 - Test file(test.txt) included in the repo.
 - Contains verified hash value from [https://www.di-mgt.com.au/sha_testvectors.html](https://www.di-mgt.com.au/sha_testvectors.html "https://www.di-mgt.com.au/sha_testvectors.html"). 
 ### Inline Functions
-- To optimize the hashing algorithim I opted to include inline funcitons for the bitwise operations. 
+- To optimize the hashing algorithm I opted to include inline funcitons for the bitwise operations. 
 - This involved researching how to implement Inline functions in C & also raised the question of when to use Macros vs inline functions.
 ### Known Issues 
 - As of now, this implementation of the SHA256 is not entirely correct. The test output does not match sample verified output examples. This is most likely due to BIg/Little Endian processing errors. 
