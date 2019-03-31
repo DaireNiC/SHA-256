@@ -36,12 +36,12 @@ The code was written in accordance to the the Secure Hash Algorthim as specified
 	./sha256.exe <file-name>
 	```
 	
-	![sha](https://github.com/DaireNiC/SHA-256/blob/master/media.JPG)
+	![sha](https://github.com/DaireNiC/SHA-256/blob/master/media/media.JPG)
 
 # SHA 256
 SHA 256 is an iterative algorithim. The input is alterted in such a way that the output from the last iteration is the input to the next iteration. Therefore, any slight change to the input results in a drastically different output, thus increasing the security of the algorithim.
 
-![sha](https://github.com/DaireNiC/SHA-256/blob/master/media2.JPG)
+![sha](https://github.com/DaireNiC/SHA-256/blob/master/media/media2.JPG)
 
 
 |Keywords                           | In Context of SHA Specification|
