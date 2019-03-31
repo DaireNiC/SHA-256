@@ -39,16 +39,9 @@ The code was written in accordance to the the Secure Hash Algorthim as specified
 SHA 256 is an iterative algorithim. The input is alterted in such a way that the output from the last iteration is the input to the next iteration. Therefore, any slight change to the input results in a drastically different output, thus increasing the security of the algorithim.
 
 
-```mermaid
-graph LR
-A[Input Variable Length mmm] -- Preprocessing--> B((SHA256  m))
 
-B --> D[Fixed Length Output    kkkk]
-```
-
-
-Keywords                           | In Context of SHA Specification|
-|----------------|-------------------------------|-----------------------------|
+|Keywords                           | In Context of SHA Specification|
+|----------------|-------------------------------|
 Message Digest|`Series of fixed length hex characters`            
 |ROTR|`Rotate Bits Right (circular right shift)`|
 |ROTL|`Rotate Bits Left(circular left shift)`|
@@ -138,3 +131,6 @@ void sha256(FILE *msgf) {
 - https://www.geeksforgeeks.org/bitwise-operators-in-c-cpp/
 - [https://www.youtube.com/watch?v=jlQmeyce65Q](https://www.youtube.com/watch?v=jlQmeyce65Q)
 - https://www.programiz.com/c-programming/bitwise-operators
+
+
+
