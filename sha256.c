@@ -114,7 +114,7 @@ const uint32_t K[] = {
 
 // test output for string "abc"
 // source: https://www.di-mgt.com.au/sha_testvectors.html
-const char *TEST = "ddaf35a193617aba cc417349ae204131 12e6fa4e89a97ea2 0a9eeee64b55d39a 2192992a274fc1a8 36ba3c23a3feebbd 454d4423643ce80e 2a9ac94fa54ca49f";
+const char *TEST = "edeaaff3 f1774ad2 88867377 0c6d6409 7e391bc3 62d7d6fb 34982ddf 0efd18cb";
 
 // Retrieves the next message msgblock
 int nextmsgblock(FILE *msgf, union msgblock *M, enum status *S, uint64_t *nobits);
@@ -231,7 +231,7 @@ void sha256(FILE *msgf) {
 
   } // end for
 
-  printf("SHA256 Output: %08x %x %x %x %x %x  %x %x \n ", H[0], H[1], H[2], H[3], H[4], H[5], H[6], H[7]);
+  printf("SHA256 Output: %08x %08x %08x %08x %08x %08x  %08x %08x \n ", H[0], H[1], H[2], H[3], H[4], H[5], H[6], H[7]);
 } // end void sha265()
 
 // see sections 3.2 for definitions
